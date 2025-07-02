@@ -172,32 +172,12 @@
             margin-bottom: 30px;
         }
 
-        .preview-toggle {
-            display: flex;
-            background: #ecf0f1;
-            border-radius: 25px;
-            padding: 4px;
+        .preview-title {
+            text-align: center;
             margin-bottom: 20px;
-            max-width: 300px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .toggle-btn {
-            flex: 1;
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            border-radius: 20px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-btn.active {
-            background: white;
-            color: #3498db;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #2c3e50;
+            font-size: 1.1rem;
         }
 
         .preview-container {
@@ -220,7 +200,6 @@
 
         .action-buttons {
             display: none;
-            gap: 15px;
             justify-content: center;
         }
 
@@ -337,17 +316,13 @@
             </div>
 
             <div class="preview-area" id="previewArea">
-                <div class="preview-toggle">
-                    <button class="toggle-btn active" id="beforeBtn">Before</button>
-                    <button class="toggle-btn" id="afterBtn">After</button>
-                </div>
+                <div class="preview-title">プレビュー</div>
                 <div class="preview-container">
                     <img id="previewImage" class="preview-image" alt="プレビュー">
                 </div>
             </div>
 
             <div class="action-buttons" id="actionButtons">
-                <button class="btn btn-primary" id="applyBlurBtn">ぼかしを適用</button>
                 <button class="btn btn-secondary" id="downloadBtn">保存</button>
             </div>
 
@@ -362,7 +337,7 @@
     </div>
 
     <div class="footer">
-        <p>Powered by <a href="#">LiemPia</a></p>
+        <p>&copy; 2025 画像ぼかしツール</p>
     </div>
 
     <script>
@@ -380,9 +355,6 @@
         const blurSlider = document.getElementById('blurSlider');
         const blurValue = document.getElementById('blurValue');
         const previewImage = document.getElementById('previewImage');
-        const beforeBtn = document.getElementById('beforeBtn');
-        const afterBtn = document.getElementById('afterBtn');
-        const applyBlurBtn = document.getElementById('applyBlurBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const formatDropdown = document.getElementById('formatDropdown');
 
@@ -398,15 +370,12 @@
             blurValue.textContent = currentBlur;
             if (originalImage) {
                 updatePreview();
+                // 自動的にぼかし効果を適用
+                applyBlur();
             }
         });
 
-        // プレビュー切り替え
-        beforeBtn.addEventListener('click', () => showBefore());
-        afterBtn.addEventListener('click', () => showAfter());
-
         // ボタンイベント
-        applyBlurBtn.addEventListener('click', applyBlur);
         downloadBtn.addEventListener('click', downloadImage);
 
         function handleFileSelect(e) {
@@ -442,7 +411,7 @@
                 originalImage.onload = function() {
                     previewImage.src = e.target.result;
                     showControls();
-                    showBefore();
+                    updatePreview(); // 初期表示で処理後画像を表示
                 };
                 originalImage.src = e.target.result;
             };
@@ -472,18 +441,6 @@
             }
         }
 
-        function showBefore() {
-            beforeBtn.classList.add('active');
-            afterBtn.classList.remove('active');
-            previewImage.src = originalImage.src;
-        }
-
-        function showAfter() {
-            beforeBtn.classList.remove('active');
-            afterBtn.classList.add('active');
-            updatePreview();
-        }
-
         function applyBlur() {
             if (currentBlur > 0) {
                 const canvas = document.createElement('canvas');
@@ -495,13 +452,9 @@
                 ctx.drawImage(originalImage, 0, 0);
                 
                 processedImage = canvas;
-                showAfter();
-                
-                // 成功メッセージ（簡易的）
-                applyBlurBtn.textContent = '✓ 適用完了';
-                setTimeout(() => {
-                    applyBlurBtn.textContent = 'ぼかしを適用';
-                }, 2000);
+            } else {
+                // ぼかしが0の場合は元画像を使用
+                processedImage = null;
             }
         }
 
