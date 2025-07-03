@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +37,7 @@
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .subtitle {
@@ -50,7 +51,7 @@
         .main-content {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             padding: 40px;
             margin-bottom: 40px;
         }
@@ -120,10 +121,6 @@
             margin-bottom: 30px;
         }
 
-        .control-group {
-            margin-bottom: 25px;
-        }
-
         .control-label {
             display: block;
             font-weight: 600;
@@ -157,7 +154,7 @@
             border-radius: 50%;
             background: #3498db;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
         }
 
         .blur-value {
@@ -195,7 +192,7 @@
             max-width: 100%;
             max-height: 400px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .action-buttons {
@@ -271,11 +268,11 @@
                 padding: 20px;
                 margin: 0 10px 20px;
             }
-            
+
             .title {
                 font-size: 2rem;
             }
-            
+
             .action-buttons {
                 flex-direction: column;
                 align-items: center;
@@ -283,6 +280,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -299,19 +297,15 @@
                 <div class="upload-text">画像をドラッグ＆ドロップ</div>
                 <div class="upload-subtext">または</div>
                 <br>
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    ファイルを選択
-                </button>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">ファイルを選択</button>
                 <input type="file" id="fileInput" class="file-input" accept="image/*">
             </div>
 
             <div class="controls" id="controls">
-                <div class="control-group">
-                    <label class="control-label">ぼかし強度</label>
-                    <div class="blur-control">
-                        <input type="range" id="blurSlider" class="blur-slider" min="0" max="20" value="0" step="0.5">
-                        <span class="blur-value"><span id="blurValue">0</span>px</span>
-                    </div>
+                <label class="control-label">ぼかし強度</label>
+                <div class="blur-control">
+                    <input type="range" id="blurSlider" class="blur-slider" min="0" max="20" value="0" step="0.5">
+                    <span class="blur-value"><span id="blurValue">0</span>px</span>
                 </div>
             </div>
 
@@ -345,7 +339,6 @@
         let processedImage = null;
         let currentBlur = 0;
 
-        // DOM要素の取得
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const controls = document.getElementById('controls');
@@ -358,31 +351,20 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const formatDropdown = document.getElementById('formatDropdown');
 
-        // ファイルアップロード処理
         fileInput.addEventListener('change', handleFileSelect);
         uploadArea.addEventListener('dragover', handleDragOver);
         uploadArea.addEventListener('dragleave', handleDragLeave);
         uploadArea.addEventListener('drop', handleDrop);
-
-        // スライダーイベント
-        blurSlider.addEventListener('input', function() {
+        blurSlider.addEventListener('input', function () {
             currentBlur = parseFloat(this.value);
             blurValue.textContent = currentBlur;
-            if (originalImage) {
-                updatePreview();
-                // 自動的にぼかし効果を適用
-                applyBlur();
-            }
+            if (originalImage) applyBlur();
         });
-
-        // ボタンイベント
         downloadBtn.addEventListener('click', downloadImage);
 
         function handleFileSelect(e) {
             const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                loadImage(file);
-            }
+            if (file && file.type.startsWith('image/')) loadImage(file);
         }
 
         function handleDragOver(e) {
@@ -399,19 +381,19 @@
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                loadImage(file);
-            }
+            if (file && file.type.startsWith('image/')) loadImage(file);
         }
 
         function loadImage(file) {
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 originalImage = new Image();
-                originalImage.onload = function() {
-                    previewImage.src = e.target.result;
+                originalImage.onload = function () {
                     showControls();
-                    updatePreview(); // 初期表示で処理後画像を表示
+                    applyBlur();
+                };
+                originalImage.onerror = function () {
+                    alert('画像の読み込みに失敗しました。');
                 };
                 originalImage.src = e.target.result;
             };
@@ -425,56 +407,40 @@
             formatSelect.style.display = 'flex';
         }
 
-        function updatePreview() {
-            if (currentBlur > 0) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = originalImage.width;
-                canvas.height = originalImage.height;
-                
-                ctx.filter = `blur(${currentBlur}px)`;
-                ctx.drawImage(originalImage, 0, 0);
-                
-                previewImage.src = canvas.toDataURL();
-            } else {
-                previewImage.src = originalImage.src;
-            }
-        }
-
         function applyBlur() {
             if (currentBlur > 0) {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
                 canvas.width = originalImage.width;
                 canvas.height = originalImage.height;
-                
                 ctx.filter = `blur(${currentBlur}px)`;
                 ctx.drawImage(originalImage, 0, 0);
-                
+                previewImage.src = canvas.toDataURL();
                 processedImage = canvas;
             } else {
-                // ぼかしが0の場合は元画像を使用
+                previewImage.src = originalImage.src;
                 processedImage = null;
             }
         }
 
         function downloadImage() {
             if (!originalImage) return;
-            
-            const canvas = processedImage || document.createElement('canvas');
-            if (!processedImage) {
-                const ctx = canvas.getContext('2d');
-                canvas.width = originalImage.width;
-                canvas.height = originalImage.height;
+
+            let canvasToDownload = processedImage;
+            if (!canvasToDownload) {
+                canvasToDownload = document.createElement('canvas');
+                const ctx = canvasToDownload.getContext('2d');
+                canvasToDownload.width = originalImage.width;
+                canvasToDownload.height = originalImage.height;
                 ctx.filter = `blur(${currentBlur}px)`;
                 ctx.drawImage(originalImage, 0, 0);
             }
-            
+
             const format = formatDropdown.value;
             const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
             const quality = format === 'jpg' ? 0.9 : 1.0;
-            
-            canvas.toBlob(function(blob) {
+
+            canvasToDownload.toBlob(function (blob) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -485,4 +451,5 @@
         }
     </script>
 </body>
+
 </html>
